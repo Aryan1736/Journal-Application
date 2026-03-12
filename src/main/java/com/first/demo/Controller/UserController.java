@@ -5,6 +5,8 @@ import com.first.demo.Entity.User;
 import com.first.demo.Repository.UserRepository;
 import com.first.demo.Service.JournalEntryService;
 import com.first.demo.Service.UserService;
+import com.first.demo.Service.WeatherService;
+import com.first.demo.api.response.WeatherResponse;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,9 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private WeatherService weatherService;
+
 
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestBody User user){
@@ -46,6 +51,16 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userRepository.deleteByUsername(authentication.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping
+    public ResponseEntity<?> greeting(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        WeatherResponse weatherResponse = weatherService.getWeather("Rourkela");
+        String greeting = "";
+        if(weatherResponse != null)
+            greeting += " , Weather feels like " + weatherResponse.getCurrent().getFeelsLike();
+        return new ResponseEntity<>("Hi " + authentication.getName() + greeting, HttpStatus.OK);
     }
 
 }
