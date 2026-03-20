@@ -1,5 +1,6 @@
 package com.first.demo.Entity;
 
+import com.first.demo.Enums.Sentiment;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -22,5 +23,7 @@ public class JournalEntry {
     private String content;
 
     private LocalDateTime date;
+
+    private Sentiment sentiment;
 
 }

@@ -1,5 +1,6 @@
 package com.first.demo.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.first.demo.Cache.AppCache;
 import com.first.demo.Entity.User;
 import com.first.demo.api.response.WeatherResponse;
@@ -25,11 +26,21 @@ public class WeatherService {
     @Autowired
     private AppCache appCache;
 
-    public WeatherResponse getWeather(String city){
-        String finalAPI = appCache.App_Cache.get("weather_api").replace("<CITY>",city).replace("<API_KEY>",apiKey);
-        ResponseEntity<WeatherResponse> response =  restTemplate.exchange(finalAPI, HttpMethod.GET, null, WeatherResponse.class);
-        WeatherResponse body = response.getBody();
-        return body;
+    @Autowired
+    private RedisService redisService;
+
+    public WeatherResponse getWeather(String city) throws JsonProcessingException {
+        WeatherResponse weatherResponse = redisService.get("Weather of " + city, WeatherResponse.class);
+        if(weatherResponse!=null)
+            return weatherResponse;
+        else{
+            String finalAPI = appCache.App_Cache.get("weather_api").replace("<CITY>",city).replace("<API_KEY>",apiKey);
+            ResponseEntity<WeatherResponse> response =  restTemplate.exchange(finalAPI, HttpMethod.GET, null, WeatherResponse.class);
+            WeatherResponse body = response.getBody();
+            if(body!=null)
+                redisService.set("Weather of " + city,body,300L);
+            return body;
+        }
     }
 
     // consume external post APIs
